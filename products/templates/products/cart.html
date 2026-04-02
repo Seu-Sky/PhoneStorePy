@@ -1,0 +1,129 @@
+{% extends 'products/base.html' %}
+{% load humanize %}
+
+{% block title %}Giỏ hàng của bạn{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h2 class="fw-bold mb-4 text-dark"><i class="bi bi-cart3 text-primary me-2"></i>Giỏ hàng của bạn</h2>
+    
+    {% if cart_items %}
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                <table class="table align-middle mb-0">
+                   <thead class="bg-light">
+                        <tr>
+                            <th class="ps-4">Sản phẩm</th>
+                            <th>Giá</th>
+                            <th class="text-center">Số lượng</th> <th>Tổng</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in cart_items %}
+                        <tr>
+                            <td class="ps-4">
+                                <div class="d-flex align-items-center py-2">
+                                    <img src="{{ item.product.image.url }}" class="rounded-3 shadow-sm" style="width: 60px; height: 60px; object-fit: contain; background: #fff;">
+                                    <div class="ms-3">
+                                        <p class="fw-bold mb-0 text-dark text-truncate" style="max-width: 200px;">{{ item.product.name }}</p>
+                                        <small class="text-muted">Mã: #{{ item.product.id }}</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>{{ item.product.price|intcomma }} VND</td>
+                           <td class="text-center">
+                                <div class="d-inline-flex align-items-center bg-white border rounded-pill shadow-sm p-1">
+                                    <a href="{% url 'update_cart' item.product.id 'decrement' %}" 
+                                    class="btn btn-sm btn-light rounded-circle d-flex align-items-center justify-content-center" 
+                                    style="width: 32px; height: 32px; border: none;">
+                                        <i class="bi bi-dash-lg text-primary"></i>
+                                    </a>
+
+                                    <span class="px-3 fw-bold text-dark fs-6" style="min-width: 45px; display: inline-block;">
+                                        {{ item.quantity }}
+                                    </span>
+
+                                    <a href="{% url 'update_cart' item.product.id 'increment' %}" 
+                                    class="btn btn-sm btn-light rounded-circle d-flex align-items-center justify-content-center" 
+                                    style="width: 32px; height: 32px; border: none;">
+                                        <i class="bi bi-plus-lg text-primary"></i>
+                                    </a>
+                                </div>
+                            </td>
+                            <td class="fw-bold text-primary">{{ item.total|intcomma }} VND</td>
+                            <td>
+                                <a href="{% url 'remove_from_cart' item.product.id %}" class="text-danger fs-5 opacity-75 hover-danger"><i class="bi bi-trash"></i></a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm rounded-4 p-4 sticky-top" style="top: 100px;">
+                <h5 class="fw-bold mb-4 border-bottom pb-2">Chi tiết đơn hàng</h5>
+                
+                <div class="product-summary mb-4" style="max-height: 200px; overflow-y: auto;">
+                    {% for item in cart_items %}
+                    <div class="d-flex justify-content-between mb-2 small">
+                        <span class="text-secondary text-truncate me-2">{{ item.product.name }} (x{{ item.quantity }})</span>
+                        <span class="fw-medium">{{ item.total|intcomma }} VND</span>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-secondary">Tạm tính:</span>
+                    <span class="fw-bold">{{ total_price|intcomma }} VND</span>
+                </div>
+                <div class="d-flex justify-content-between mb-3">
+                    <span class="text-secondary">Phí vận chuyển:</span>
+                    <span class="text-success fw-bold small">MIỄN PHÍ</span>
+                </div>
+                <hr class="my-4">
+                <div class="d-flex justify-content-between mb-4">
+                    <span class="fw-bold fs-5">Thành tiền:</span>
+                    <span class="fw-bold fs-3 text-danger">{{ total_price|intcomma }} VND</span>
+                </div>
+                <div>
+                   <a href="{% url 'checkout' %}" class="btn btn-primary w-100 rounded-pill py-3 fw-bold shadow">TIẾN HÀNH THANH TOÁN</a >
+                </div>
+                <div class="mt-4"><a href="/" class="text-decoration-none text-center d-block small text-primary fw-bold">Mua thêm sản phẩm khác</a></div>
+                
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+        <div class="mb-4">
+            <i class="bi bi-cart-x display-1 text-muted opacity-25"></i>
+        </div>
+        <h4 class="text-secondary">Giỏ hàng của bạn đang trống!</h4>
+        <p class="text-muted">Hãy chọn cho mình những sản phẩm công nghệ tuyệt vời nhé.</p>
+        <a href="/" class="btn btn-primary rounded-pill px-5 mt-3 py-2 fw-bold shadow">Về trang chủ mua sắm</a>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+    .hover-danger:hover { color: #dc3545 !important; opacity: 1 !important; }
+    .btn-white:hover { background-color: #f8f9fa !important; }
+    /* Hiệu ứng cho nút tăng giảm trong giỏ hàng */
+    .btn-light.rounded-circle {
+        background-color: #f8f9fa;
+        transition: all 0.2s ease;
+    }
+
+    .btn-light.rounded-circle:hover {
+        background-color: #0d6efd !important;
+    }
+
+    .btn-light.rounded-circle:hover i {
+        color: white !important;
+    }
+</style>
+{% endblock %}

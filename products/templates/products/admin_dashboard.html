@@ -1,0 +1,169 @@
+{% extends 'products/base.html' %}
+{% load humanize %}
+
+{% block title %}Dashboard Quản trị - PhoneStore{% endblock %}
+
+{% block content %}
+<div class="container-fluid my-5 px-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="fw-bold text-dark m-0">
+            <i class="bi bi-speedometer2 text-primary me-2"></i>Bảng điều khiển Quản trị PhoneStore
+        </h3>
+        
+        <div class="d-flex gap-2">
+            <a href="{% url 'add_product' %}" class="btn btn-primary rounded-pill px-4 shadow-sm fw-bold">
+                <i class="bi bi-plus-lg me-2"></i>Thêm sản phẩm mới
+            </a>
+            
+            <span class="badge bg-primary-subtle text-primary px-3 py-2 rounded-pill shadow-sm border border-primary-subtle d-none d-md-inline-block align-self-center">
+                Hệ thống ổn định
+            </span>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-5">
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm rounded-4 p-4 h-100 bg-primary text-white">
+                <h6 class="text-white-50 small fw-bold text-uppercase">Tổng doanh thu thực tế</h6>
+                <h1 class="fw-bold text-danger">{{ total_revenue|default:0|floatformat:0|intcomma }} VND</h1>
+                <p class="mt-3 small mb-0"><i class="bi bi-info-circle me-1"></i> Tính trên các đơn đã "Hoàn thành"</p>
+            </div>
+        </div>
+        
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm rounded-4 p-4 bg-white h-100">
+                <h6 class="fw-bold text-dark mb-3">Xu hướng doanh thu (Line Chart)</h6>
+                <div style="height: 200px;">
+                    <canvas id="revenueChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
+            <h6 class="fw-bold text-danger">Danh sách đơn hàng mới nhất</h6>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light">
+                    <tr>
+                        <th class="ps-4">Mã đơn</th>
+                        <th>Khách hàng</th>
+                        <th>Sản phẩm</th>
+                        <th>Tổng tiền</th>
+                        <th>Trạng thái</th>
+                        <th class="text-center">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in orders %}
+                    <tr>
+                        <td class="ps-4 fw-bold text-primary">#{{ order.id }}</td>
+                        <td>
+                            <div class="fw-bold text-dark">{{ order.full_name }}</div>
+                            <small class="text-muted"><i class="bi bi-telephone me-1"></i>{{ order.phone }}</small>
+                        </td>
+                        <td>
+                            <small class="text-secondary">
+                                {% for item in order.parsed_items %}
+                                    • {{ item.name }} (x{{ item.quantity }})<br>
+                                {% endfor %}
+                            </small>
+                        </td>
+                        <td class="fw-bold text-danger">{{ order.total_price|intcomma }} VND</td>
+                        <td>
+                            <span class="badge rounded-pill px-3 
+                                {% if order.status == 'Hoàn thành' %}bg-success
+                                {% elif order.status == 'Đang giao' %}bg-info
+                                {% elif order.status == 'Chờ xử lý' %}bg-warning text-dark
+                                {% else %}bg-secondary{% endif %}">
+                                {{ order.status }}
+                            </span>
+                        </td>
+                        <td class="text-center">
+                            <div class="btn-group gap-2">
+                                {% if order.status == 'Chờ xử lý' %}
+                                    <a href="{% url 'update_status' order.id 'Đang giao' %}" class="btn btn-sm btn-info text-white rounded-pill px-3 shadow-sm">Giao hàng</a>
+                                {% elif order.status == 'Đang giao' %}
+                                    <a href="{% url 'update_status' order.id 'Hoàn thành' %}" class="btn btn-sm btn-success rounded-pill px-3 shadow-sm">Xong</a>
+                                {% endif %}
+
+                                {% if order.status == 'Đã hủy' or order.status == 'Hoàn thành' %}
+                                    <button type="button" data-url="{% url 'admin_delete_order' order.id %}" class="btn btn-sm btn-danger rounded-circle p-2 btn-admin-delete shadow-sm" title="Xóa vĩnh viễn">
+                                        <i class="bi bi-trash3 px-1"></i>
+                                    </button>
+                                {% else %}
+                                    <a href="{% url 'update_status' order.id 'Đã hủy' %}" class="btn btn-sm btn-outline-secondary rounded-pill px-3">Hủy</a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center py-5 text-muted fst-italic">Chưa có đơn hàng nào để hiển thị.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // 1. Vẽ biểu đồ Doanh thu
+        const ctx = document.getElementById('revenueChart');
+        if (ctx) {
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: {{ chart_labels|safe|default:"[]" }},
+                    datasets: [{
+                        label: 'Doanh thu (đ)',
+                        data: {{ chart_data|safe|default:"[]" }},
+                        borderColor: '#0d6efd',
+                        backgroundColor: 'rgba(13, 110, 253, 0.1)',
+                        tension: 0.4,
+                        fill: true,
+                        pointRadius: 4,
+                        borderWidth: 3
+                    }]
+                },
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, display: false },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        }
+
+        // 2. Xử lý nút xóa với SweetAlert2
+        document.querySelectorAll('.btn-admin-delete').forEach(btn => {
+            btn.onclick = function() {
+                const url = this.getAttribute('data-url');
+                Swal.fire({
+                    title: 'Xóa vĩnh viễn đơn này?',
+                    text: "Đơn hàng sẽ không thể khôi phục sau khi xóa!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#dc3545',
+                    cancelButtonColor: '#6c757d', 
+                    confirmButtonText: 'Xoá',
+                    cancelButtonText: 'Hủy',      
+                    reverseButtons: true          
+                }).then((result) => {
+                    if (result.isConfirmed) { 
+                        window.location.href = url; 
+                    }
+                });
+            };
+        });
+    });
+</script> 
+{% endblock %}

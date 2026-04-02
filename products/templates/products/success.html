@@ -1,0 +1,63 @@
+{% extends 'products/base.html' %}
+{% load humanize %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="text-center mb-5">
+                <i class="bi bi-check-circle-fill text-success" style="font-size: 5rem;"></i>
+                <h2 class="fw-bold mt-3">Đặt hàng thành công!</h2>
+                <p class="text-muted">Cảm ơn <strong>{{ order.full_name }}</strong>, đơn hàng của bạn đã được hệ thống ghi nhận.</p>
+            </div>
+
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                <div class="card-header bg-primary text-white py-3 px-4 d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 fw-bold"><i class="bi bi-receipt me-2"></i>Chi tiết đơn hàng #{{ order.id }}</h5>
+                    <span class="badge bg-white text-primary rounded-pill">{{ order.created_at|date:"d/m/Y H:i" }}</span>
+                </div>
+                
+                <div class="card-body p-0">
+                    <table class="table table-hover mb-0 align-middle">
+                        <thead class="bg-light text-secondary">
+                            <tr>
+                                <th class="ps-4 py-3">Tên sản phẩm</th>
+                                <th class="text-center">Số lượng</th>
+                                <th class="text-end pe-4">Thành tiền</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                           {% for item in order.parsed_items %}
+                            <tr>
+                                <td class="ps-4 fw-bold text-dark">{{ item.name }}</td>
+                                <td class="text-center">x{{ item.quantity }}</td>
+                                <td class="text-end pe-4 fw-bold text-primary">
+                                    {{ item.total|default_if_none:''|intcomma }}{% if not item.total %}{{ item.price|intcomma }}{% endif %} đ
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot class="bg-light">
+                            <tr>
+                                <td colspan="2" class="ps-4 py-3 fw-bold text-dark fs-5">Tổng thanh toán:</td>
+                                <td class="text-end pe-4 py-3 fw-bold text-danger fs-4">{{ order.total_price|intcomma }} VND</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+
+            <div class="mt-4 p-4 bg-white rounded-4 shadow-sm border-start border-success border-4">
+                <h6 class="fw-bold text-success mb-3"><i class="bi bi-geo-alt-fill me-2"></i>Địa chỉ nhận hàng</h6>
+                <p class="mb-1"><strong>Người nhận:</strong> {{ order.full_name }} - {{ order.phone }}</p>
+                <p class="mb-0 text-secondary"><strong>Địa chỉ:</strong> {{ order.address }}</p>
+            </div>
+
+            <div class="text-center mt-5">
+                <a href="/" class="btn btn-outline-primary rounded-pill px-5 fw-bold me-2"> Quay về trang chủ</a>
+                <button onclick="window.print()" class="btn btn-outline-primary rounded-pill px-5 fw-bold"><i class="bi bi-printer me-2"></i>In hóa đơn</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

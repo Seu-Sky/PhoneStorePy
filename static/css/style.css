@@ -1,0 +1,121 @@
+/*cấu hình chug*/
+body { 
+    background-color: #f4f6f9; 
+    display: flex; 
+    flex-direction: column; 
+    min-height: 100vh; 
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
+}
+main { flex: 1; }
+
+/* navbar */
+.navbar { 
+    background: #ffffff; 
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05); 
+    padding: 12px 0; 
+}
+/* Hiệu ứng cho Banner trang chủ */
+.banner-img {
+    height: 400px; 
+    object-fit: cover;
+}
+
+/* Lớp phủ màu đen mờ giúp chữ trắng nổi bần bật */
+.carousel-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to right, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.7) 100%);
+    pointer-events: none; /* Để không che mất nút bấm */
+}
+
+/* Hiệu ứng trôi nhẹ khi Banner chuyển cảnh */
+.carousel-caption {
+    animation: slideUp 0.8s ease-out;
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+/* Nút Danh mục */
+.btn-category { 
+    border: 1px solid #0d6efd;
+    color: #0d6efd;
+    background-color: transparent;
+    border-radius: 8px; 
+    font-weight: 600; 
+    padding: 8px 16px; 
+    transition: 0.3s;
+    display: flex;
+    align-items: center;
+}
+.btn-category:hover { 
+    background-color: #0d6efd;
+    color: white;
+}
+
+/* Thanh tìm kiếm chính giữa */
+.search-container { 
+    flex: 1; 
+    max-width: 600px; 
+    margin: 0 30px; 
+}
+
+.search-form {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.search-input { 
+    background: #ffffff; 
+    border: 1px solid #ced4da; 
+    border-radius: 25px; 
+    padding: 10px 50px 10px 20px; 
+    width: 100%; 
+    height: 45px;
+    transition: all 0.3s ease; 
+    outline: none;
+}
+
+.search-input:focus { 
+    border-color: #80bdff; 
+    box-shadow: 0 0 0 0.25rem rgba(0, 123, 255, 0.15);
+}
+
+/* Nút kính lúp nằm TRONG ô input */
+.search-submit-btn {
+    position: absolute;
+    right: 5px;
+    background: transparent;
+    border: none;
+    color: #0d6efd;
+    padding: 8px 15px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+}
+
+/* Nút Đăng nhập/Đăng ký */
+.btn-auth-outline {
+    border: 1px solid #0d6efd;
+    color: #0d6efd;
+    border-radius: 25px;
+    padding: 6px 20px;
+    font-weight: 600;
+    transition: 0.3s;
+}
+.btn-auth-outline:hover {
+    background: #0d6efd;
+    color: white;
+}
+
+/* footer */
+.footer { background: #fff; border-top: 1px solid #eee; padding: 50px 0 20px; }
+.footer h6 { font-weight: 700; color: #222; margin-bottom: 20px; }
+.footer-link { color: #666; text-decoration: none; display: block; margin-bottom: 10px; transition: 0.2s; }
+.footer-link:hover { color: #0d6efd; transform: translateX(5px); }

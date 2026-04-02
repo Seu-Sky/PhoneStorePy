@@ -1,0 +1,41 @@
+{% extends 'products/base.html' %}
+
+{% block title %}Hồ sơ của tôi - PhoneStore{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm rounded-4 p-4">
+                <div class="text-center mb-4">
+                    <div class="bg-primary-subtle d-inline-block p-3 rounded-circle mb-3">
+                        <i class="bi bi-person-badge fs-1 text-primary"></i>
+                    </div>
+                    <h3 class="fw-bold">Hồ sơ cá nhân</h3>
+                    <p class="text-muted">Lưu thông tin để thanh toán nhanh hơn</p>
+                </div>
+
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-secondary">Tên tài khoản</label>
+                        <input type="text" class="form-control bg-light border-0 py-2" value="{{ user.username }}" disabled>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-secondary">Số điện thoại</label>
+                        <input type="text" name="phone" class="form-control py-2" value="{{ profile.phone }}" placeholder="Nhập số điện thoại...">
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label small fw-bold text-secondary">Địa chỉ giao hàng mặc định</label>
+                        <textarea name="address" class="form-control" rows="3" placeholder="Nhập địa chỉ của bạn...">{{ profile.address }}</textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100 rounded-pill py-2 fw-bold shadow-sm">
+                        <i class="bi bi-save me-2"></i>Lưu thay đổi
+                    </button>
+                </form>
+                 <a href="/" class=" rounded-pill px-5 mt-3 py-2 fw-bold "><i class="bi bi-arrow-bar-left"></i> Về trang chủ mua sắm</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

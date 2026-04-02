@@ -1,0 +1,62 @@
+{% extends 'products/base.html' %}
+
+{% block title %}
+    {% if edit_mode %}Sửa sản phẩm - {{ product.name }}{% else %}Thêm sản phẩm mới{% endif %} - PhoneStore
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm rounded-4 p-4">
+                <div class="d-flex align-items-center mb-4">
+                    <a href="{% url 'manage_products' %}" class="btn btn-light rounded-circle me-3 shadow-sm">
+                        <i class="bi bi-arrow-left"></i>
+                    </a>
+                    <h3 class="fw-bold m-0 text-dark">
+                        {% if edit_mode %}
+                            <i class="bi bi-pencil-square text-primary me-2"></i>Chỉnh sửa sản phẩm
+                        {% else %}
+                            <i class="bi bi-plus-circle text-primary me-2"></i>Thêm sản phẩm mới
+                        {% endif %}
+                    </h3>
+                </div>
+
+                <form method="POST" enctype="multipart/form-data"> 
+                    {% csrf_token %}
+                    
+                    {% for field in form %}
+                    <div class="mb-4">
+                        <label class="form-label small fw-bold text-secondary text-uppercase">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in field.errors %}{{ error }}{% endfor %}
+                            </div>
+                        {% endif %}
+                        
+                        {% if edit_mode and field.name == 'image' and product.image %}
+                            <div class="mt-2 p-2 border rounded-3 bg-light d-inline-block">
+                                <small class="d-block text-muted mb-1">Ảnh hiện tại:</small>
+                                <img src="{{ product.image.url }}" class="rounded-2" style="height: 80px; width: auto; object-fit: contain;">
+                            </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+
+                    <div class="d-grid gap-2 mt-5">
+                        <button type="submit" class="btn btn-primary btn-lg rounded-pill fw-bold shadow-sm py-3">
+                            {% if edit_mode %}
+                                <i class="bi bi-save-fill me-2"></i> LƯU THAY ĐỔI
+                            {% else %}
+                                <i class="bi bi-plus-circle-fill me-2"></i> LƯU LẠI SẢN PHẨM
+                            {% endif %}
+                        </button>
+                        <a href="{% url 'manage_products' %}" class="btn btn-link text-decoration-none text-muted mt-2"><span class="btn btn-primary"> Vào quản lý sản phẩm</span></a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

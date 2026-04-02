@@ -1,0 +1,99 @@
+{% extends 'products/base.html' %}
+{% load humanize %}
+
+{% block title %}Thanh toán đơn hàng - PhoneStore{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row g-5">
+        <div class="col-md-7 col-lg-8">
+            <div class="card border-0 shadow-sm rounded-4 p-4">
+                <h4 class="fw-bold mb-4 text-primary"><i class="bi bi-truck me-2"></i>Thông tin giao hàng</h4>
+                
+                <form method="POST" class="needs-validation">
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label fw-bold small text-secondary">Họ và tên người nhận</label>
+                            <input type="text" name="full_name" class="form-control rounded-3 py-2 border-0 bg-light" 
+                                   value="{{ user.username }}" placeholder="Nhập tên người nhận..." required>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label fw-bold small text-secondary">Số điện thoại liên hệ</label>
+                            <input type="text" name="phone" class="form-control rounded-3 py-2 border-0 bg-light" 
+                                   value="{{ profile.phone|default:'' }}" placeholder="Số điện thoại nhận hàng..." required>
+                            <small class="text-muted italic">Sêu ơi, nhớ kiểm tra kỹ số điện thoại nhé!</small>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label fw-bold small text-secondary">Địa chỉ nhận hàng chi tiết</label>
+                            <textarea name="address" class="form-control rounded-3 border-0 bg-light" rows="3" 
+                                      placeholder="Số nhà, tên đường, phường/xã, quận/huyện..." required>{{ profile.address|default:'' }}</textarea>
+                        </div>
+                    </div>
+
+                    <hr class="my-4 opacity-10">
+
+                    <h5 class="fw-bold mb-3 small text-uppercase text-secondary">Phương thức thanh toán</h5>
+                    <div class="my-3">
+                        <div class="form-check p-3 border rounded-3 mb-2 bg-light">
+                            <input id="cod" name="paymentMethod" type="radio" class="form-check-input" checked required>
+                            <label class="form-check-label fw-medium" for="cod">
+                                <i class="bi bi-cash-coin me-2 text-success"></i>Thanh toán khi nhận hàng (COD)
+                            </label>
+                        </div>
+                        <div class="form-check p-3 border rounded-3 opacity-50">
+                            <input id="vnpay" name="paymentMethod" type="radio" class="form-check-input" disabled>
+                            <label class="form-check-label fw-medium" for="vnpay">
+                                <i class="bi bi-credit-card me-2"></i>Chuyển khoản / Ví điện tử (Sắp ra mắt)
+                            </label>
+                        </div>
+                    </div>
+
+                    <button class="w-100 btn btn-primary btn-lg rounded-pill fw-bold shadow-sm mt-4 py-3" type="submit">
+                        <i class="bi bi-bag-check-fill me-2"></i>XÁC NHẬN ĐẶT HÀNG
+                    </button>
+                </form>
+                <hr>
+                 <a href="/" class=" rounded-pill px-5 mt-3 py-2 fw-bold "><i class="bi bi-arrow-bar-left"></i> Về trang chủ mua sắm</a>
+            </div>
+        </div>
+
+        <div class="col-md-5 col-lg-4">
+            <div class="card border-0 shadow-sm rounded-4 p-4 sticky-top" style="top: 100px;">
+                <h5 class="d-flex justify-content-between align-items-center mb-4">
+                    <span class="text-primary fw-bold">Giỏ hàng của bạn</span>
+                    <span class="badge bg-primary rounded-pill">{{ cart_items|length }}</span>
+                </h5>
+                
+                <ul class="list-group list-group-flush mb-3">
+                    {% for item in cart_items %}
+                    <li class="list-group-item d-flex justify-content-between lh-sm py-3 px-0 bg-transparent border-bottom">
+                        <div class="d-flex gap-3">
+                            <img src="{{ item.image_url }}" class="rounded-2" style="width: 50px; height: 50px; object-fit: contain;">
+                            <div>
+                                <h6 class="my-0 small fw-bold text-dark text-truncate" style="max-width: 150px;">{{ item.name }}</h6>
+                                <small class="text-muted">Số lượng: {{ item.quantity }}</small>
+                            </div>
+                        </div>
+                        <span class="text-muted small fw-medium">{{ item.total|intcomma }} đ</span>
+                    </li>
+                    {% endfor %}
+                    
+                    <li class="list-group-item d-flex justify-content-between py-3 px-0 bg-transparent">
+                        <div class="text-dark">
+                            <h6 class="my-0 fw-bold">TỔNG CỘNG</h6>
+                        </div>
+                        <strong class="text-danger fs-5">{{ total_price|intcomma }} đ</strong>
+                    </li>
+                </ul>
+
+                <div class="p-3 bg-light rounded-3 border border-dashed text-center">
+                    <p class="small text-muted mb-0"><i class="bi bi-shield-lock-fill me-1"></i> Giao dịch được bảo mật bởi PhoneStore</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

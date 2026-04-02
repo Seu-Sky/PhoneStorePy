@@ -1,0 +1,89 @@
+{% extends 'products/base.html' %}
+{% load static %}
+
+{% block title %}Đăng ký tài khoản - PhoneStore{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-5 col-lg-4">
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="card-header bg-primary py-4 text-center border-0">
+                    <i class="bi bi-person-plus-fill text-white display-4"></i>
+                    <h3 class="text-white fw-bold mt-2 mb-0">Tạo tài khoản</h3>
+                </div>
+                
+                <div class="card-body p-4 p-md-5">
+                    {% if form.errors %}
+                        <div class="alert alert-danger border-0 rounded-4 small">
+                            {% for field in form %}
+                                {% for error in field.errors %}
+                                    <i class="bi bi-exclamation-circle me-1"></i> {{ error }}<br>
+                                {% endfor %}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    <form method="POST">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-secondary">Tên đăng nhập</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-0 rounded-start-pill ps-3"><i class="bi bi-person text-primary"></i></span>
+                                <input type="text" name="username" class="form-control bg-light border-0 rounded-end-pill py-2" placeholder="Ví dụ: seu_sky" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-secondary">Mật khẩu</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-0 rounded-start-pill ps-3"><i class="bi bi-lock text-primary"></i></span>
+                                <input type="password" name="password" class="form-control bg-light border-0 rounded-end-pill py-2" placeholder="••••••••" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label small fw-bold text-secondary">Xác nhận mật khẩu</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-0 rounded-start-pill ps-3"><i class="bi bi-shield-check text-primary"></i></span>
+                                <input type="password" name="password_confirm" class="form-control bg-light border-0 rounded-end-pill py-2" placeholder="Nhập lại mật khẩu" required>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 rounded-pill py-2 fw-bold shadow-sm mb-3">
+                            ĐĂNG KÝ NGAY
+                        </button>
+                    </form>
+
+                    <div class="text-center">
+                        <span class="small text-muted">Bạn đã có tài khoản?</span>
+                        <a href="{% url 'login' %}" class="small fw-bold text-decoration-none ms-1">Đăng nhập</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center mt-4">
+                <a href="{% url 'home' %}" class="text-secondary text-decoration-none small">
+                    <i class="bi bi-arrow-left me-1"></i> Quay lại trang chủ
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Làm mượt các ô input khi focus */
+    .form-control:focus {
+        background-color: #fff !important;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.1);
+        border: 1px solid #0d6efd !important;
+    }
+    .input-group-text {
+        border-right: none !important;
+    }
+    .form-control {
+        border-left: none !important;
+    }
+</style>
+{% endblock %}

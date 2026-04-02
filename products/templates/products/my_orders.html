@@ -1,0 +1,129 @@
+{% extends 'products/base.html' %}
+{% load humanize %}
+
+{% block title %}Đơn hàng của tôi - PhoneStore{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h3 class="fw-bold"><i class="bi bi-box-seam text-primary me-2"></i>Lịch sử mua hàng</h3>
+            <p class="text-muted">Quản lý và theo dõi trạng thái các đơn hàng bạn đã đặt.</p>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        {% for order in orders %}
+        <div class="col-12">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                <div class="card-header bg-light py-3 px-4 d-flex justify-content-between align-items-center border-0">
+                    <div>
+                        <span class="fw-bold text-dark me-2">Đơn hàng #{{ order.id }}</span>
+                        <span class="text-secondary small"><i class="bi bi-clock me-1"></i>{{ order.created_at|date:"d/m/Y H:i" }}</span>
+                    </div>
+                    
+                    {% if order.status == 'Chờ xử lý' %}
+                        <span class="badge bg-warning text-dark px-3 py-2 rounded-pill"><i class="bi bi-hourglass-split me-1"></i>Chờ xử lý</span>
+                    {% elif order.status == 'Đang giao' %}
+                        <span class="badge bg-info text-dark px-3 py-2 rounded-pill"><i class="bi bi-truck me-1"></i>Đang giao</span>
+                    {% elif order.status == 'Hoàn thành' %}
+                        <span class="badge bg-success px-3 py-2 rounded-pill"><i class="bi bi-check-circle me-1"></i>Hoàn thành</span>
+                    {% else %}
+                        <span class="badge bg-danger px-3 py-2 rounded-pill"><i class="bi bi-x-circle me-1"></i>Đã hủy</span>
+                    {% endif %}
+                </div>
+
+                <div class="card-body px-4">
+                    <div class="table-responsive">
+                        <table class="table table-borderless align-middle mb-0">
+                            <tbody>
+                                {% for item in order.parsed_items %}
+                                <tr>
+                                    <td class="ps-0" style="width: 70%;">
+                                        <div class="d-flex align-items-center gap-3">
+                                            {% if item.image_url %}
+                                            <div class="bg-light p-1 rounded-3 border" style="width: 50px; height: 50px;">
+                                                <img src="{{ item.image_url }}" class="w-100 h-100" style="object-fit: contain;">
+                                            </div>
+                                            {% endif %}
+                                            <span class="fw-medium text-dark">{{ item.name }}</span>
+                                        </div>
+                                    </td>
+                                    <td class="text-center text-secondary">x{{ item.quantity }}</td>
+                                    <td class="text-end pe-0 fw-bold">{{ item.total|intcomma }} đ</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <hr class="opacity-15 my-3">
+                    
+                    <div class="mb-3">
+                        <span class="text-secondary">Địa chỉ giao: <span class="fw-medium text-dark">{{ order.address }}</span></span>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="d-flex gap-2">
+                            {% if order.status == 'Chờ xử lý' %}
+                                <button type="button" data-url="{% url 'cancel_order' order.id %}" class="btn btn-outline-danger btn-sm rounded-pill px-3 btn-confirm-action" data-title="Hủy đơn hàng?" data-text="Bạn có chắc muốn hủy đơn này không?">
+                                    <i class="bi bi-x-circle me-1"></i>Hủy đơn
+                                </button>
+                            {% endif %}
+
+                            {% if order.status == 'Đã hủy' or order.status == 'Hoàn thành' %}
+                                <button type="button" data-url="{% url 'delete_order' order.id %}" class="btn btn-light text-danger btn-sm rounded-pill px-3 btn-confirm-action">
+                                    <i class="bi bi-trash3 me-1"></i>Xóa lịch sử
+                                </button>
+                            {% endif %}
+                        </div>
+
+                        <div class="text-end">
+                            <span class="text-secondary me-2">Tổng thanh toán:</span>
+                            <span class="fs-5 fw-bold text-danger">{{ order.total_price|intcomma }} đ</span>
+                        </div>
+                    </div>
+                </div> 
+            </div> 
+        </div> 
+        {% empty %}
+        <div class="col-12 text-center py-5">
+            <i class="bi bi-cart-x text-muted" style="font-size: 4rem;"></i>
+            <h5 class="mt-3 fw-bold text-secondary">Bạn chưa có đơn hàng nào</h5>
+            <p class="text-muted mb-4">Hãy dạo một vòng và chọn cho mình sản phẩm ưng ý nhé!</p>
+            <a href="{% url 'home' %}" class="btn btn-primary rounded-pill px-4 py-2 fw-bold shadow-sm">Mua sắm ngay</a>
+        </div>
+        {% endfor %}
+    </div> 
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const actionButtons = document.querySelectorAll('.btn-confirm-action');
+        
+        actionButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const url = this.getAttribute('data-url');
+                const title = this.getAttribute('data-title') || 'Xác nhận xóa?';
+                const text = this.getAttribute('data-text') || 'Hành động này sẽ xóa đơn hàng khỏi lịch sử của bạn và không thể khôi phục!';
+
+                Swal.fire({
+                    title: title,
+                    text: text,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#dc3545',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Đồng ý',
+                    cancelButtonText: 'Bỏ qua',
+                    reverseButtons: true
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = url;
+                    }
+                })
+            });
+        });
+    });
+</script>
+{% endblock %}
