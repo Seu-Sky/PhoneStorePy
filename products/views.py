@@ -15,9 +15,7 @@ from .forms import ProductForm
 # Import các Model cốt lõi
 from .models import Product, Order, Category, Profile, Review
 
-# ==========================================
-# PHÂN HỆ KHÁCH HÀNG & TRANG CHỦ
-# ==========================================
+# phân hệ khách hàng và trang chủ
 def home(request):
     """Trang chủ hiển thị danh sách sản phẩm kèm lọc theo giá và tìm kiếm AJAX."""
     products = Product.objects.all().order_by('-created_at')
@@ -89,9 +87,7 @@ def profile_view(request):
         return redirect('profile')
     return render(request, 'products/profile.html', {'profile': profile})
 
-# ==========================================
-# PHÂN HỆ GIỎ HÀNG & THANH TOÁN (ĐÃ NÂNG CẤP)
-# ==========================================
+# phân hệ giỏ hàng và thanh toán
 @login_required(login_url='login')
 def add_to_cart(request, product_id):
     """Thêm sản phẩm vào giỏ kèm tùy chọn Số lượng và Màu sắc."""
@@ -258,9 +254,7 @@ def success(request, order_id):
     order.parsed_items = json.loads(order.items_json) if order.items_json else []
     return render(request, 'products/success.html', {'order': order})
 
-# ==========================================
-# PHÂN HỆ QUẢN TRỊ VIÊN (ADMIN)
-# ==========================================
+# phân hệ quản trị viên 
 @staff_member_required(login_url='login')
 def admin_dashboard(request):
     """Dashboard dành cho Admin: Quản lý đơn hàng + Xem biểu đồ doanh thu."""
@@ -343,9 +337,7 @@ def delete_product(request, pk):
     messages.warning(request, f"Đã xóa sản phẩm {product.name}!")
     return redirect('manage_products')
 
-# ==========================================
-# PHÂN HỆ TÀI KHOẢN & LỊCH SỬ ĐƠN HÀNG
-# ==========================================
+# phân hệ tài khàn  và lịch sử đơn hàng
 def register_view(request):
     if request.method == 'POST':
         u, p, pc = request.POST.get('username'), request.POST.get('password'), request.POST.get('password_confirm')
