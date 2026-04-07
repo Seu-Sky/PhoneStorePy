@@ -32,16 +32,41 @@
                 </div>
             </div>
 
-            <div class="d-grid gap-3 d-md-flex mt-4"> 
-                <a href="{% url 'add_to_cart' product.id %}" class="btn btn-primary rounded-pill px-4 py-2 fw-bold flex-grow-1 shadow-sm d-flex align-items-center justify-content-center">
-                    <i class="bi bi-cart-plus fs-5 me-2"></i> Thêm vào giỏ
-                </a>
-                <a href="{% url 'add_to_cart' product.id %}?action=checkout" class="btn btn-primary rounded-pill px-4 py-2 fw-bold flex-grow-1 shadow-sm d-flex align-items-center justify-content-center">
-                    <i class="bi bi-bag-check-fill me-2 fs-5"></i> Mua ngay
-                </a>
-                
-                 
-            </div>
+            <form action="{% url 'add_to_cart' product.id %}" method="GET" class="mt-4">
+                <div class="row g-3 mb-4">
+                    <div class="col-sm-6">
+                        <label class="fw-bold mb-2 small text-secondary">Màu sắc</label>
+                        <select name="color" class="form-select border-primary-subtle shadow-sm rounded-3 py-2">
+                            <option value="Đen Nhám"> Đen Nhám</option>
+                            <option value="Trắng Sứ">Trắng Sứ</option>
+                            <option value="Xanh Titan">Xanh Titan</option>
+                            <option value="Hồng Pastel">Hồng Pastel</option>
+                        </select>
+                    </div>
+                    
+                    <div class="col-sm-6">
+                        <label class="fw-bold mb-2 small text-secondary">Số lượng</label>
+                        <div class="input-group shadow-sm rounded-3 overflow-hidden">
+                            <button class="btn btn-outline-secondary border-primary-subtle bg-light" type="button" onclick="this.nextElementSibling.stepDown()">
+                                <i class="bi bi-dash-lg"></i>
+                            </button>
+                            <input type="number" name="quantity" class="form-control border-primary-subtle text-center fw-bold" value="1" min="1" max="10">
+                            <button class="btn btn-outline-secondary border-primary-subtle bg-light" type="button" onclick="this.previousElementSibling.stepUp()">
+                                <i class="bi bi-plus-lg"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-grid gap-3 d-md-flex mt-4"> 
+                    <button type="submit" name="action" value="add" class="btn btn-primary rounded-pill px-4 py-2 fw-bold flex-grow-1 shadow-sm d-flex align-items-center justify-content-center">
+                        <i class="bi bi-cart-plus fs-5 me-2"></i> Thêm vào giỏ
+                    </button>
+                    <button type="submit" name="action" value="checkout" class="btn btn-primary rounded-pill px-4 py-2 fw-bold flex-grow-1 shadow-sm d-flex align-items-center justify-content-center">
+                        <i class="bi bi-bag-check-fill me-2 fs-5"></i> Mua ngay
+                    </button>
+                </div>
+            </form>
             <hr>
             <a href="/" class="btn btn-primary rounded-pill px-5 mt-3 py-2 fw-bold shadow"><i class="bi bi-arrow-bar-left"></i> Về trang chủ</a>
             <div class="row text-center mt-5">

@@ -90,41 +90,85 @@ def profile_view(request):
     return render(request, 'products/profile.html', {'profile': profile})
 
 # ==========================================
-# PHÂN HỆ GIỎ HÀNG & THANH TOÁN
+# PHÂN HỆ GIỎ HÀNG & THANH TOÁN (ĐÃ NÂNG CẤP)
 # ==========================================
 @login_required(login_url='login')
 def add_to_cart(request, product_id):
-    """Thêm sản phẩm vào giỏ (Session-based)."""
+    """Thêm sản phẩm vào giỏ kèm tùy chọn Số lượng và Màu sắc."""
     cart = request.session.get('cart', {})
     p_id = str(product_id)
-    cart[p_id] = cart.get(p_id, 0) + 1
+    
+    # Lấy dữ liệu từ Form (Mặc định số lượng là 1 nếu không có)
+    quantity = int(request.GET.get('quantity', 1))
+    color = request.GET.get('color', 'Mặc định')
+    action = request.GET.get('action')
+
+    if p_id in cart:
+        # Nếu giỏ hàng cũ lưu dạng số, chuyển sang dạng Dictionary
+        if isinstance(cart[p_id], int):
+            cart[p_id] = {'quantity': cart[p_id] + quantity, 'color': color}
+        else:
+            cart[p_id]['quantity'] += quantity
+            cart[p_id]['color'] = color
+    else:
+        cart[p_id] = {'quantity': quantity, 'color': color}
+
     request.session['cart'] = cart
-    if request.GET.get('action') == 'checkout':
+    request.session.modified = True
+
+    if action == 'checkout':
         return redirect('checkout')
-    messages.success(request, "Đã thêm vào giỏ hàng!")
+    messages.success(request, f"Đã thêm {quantity} sản phẩm vào giỏ hàng!")
     return redirect(request.META.get('HTTP_REFERER', '/'))
 
 def cart_detail(request):
-    """Hiển thị toàn bộ giỏ hàng."""
+    """Hiển thị toàn bộ giỏ hàng (Hỗ trợ đọc màu sắc)."""
     cart = request.session.get('cart', {})
     cart_items = []
     total_price = 0
-    for p_id, quantity in cart.items():
+    
+    for p_id, item_data in cart.items():
         product = get_object_or_404(Product, id=p_id)
-        total_price += product.price * quantity
-        cart_items.append({'product': product, 'quantity': quantity, 'total': product.price * quantity})
+        
+        # Kiểm tra tương thích ngược
+        if isinstance(item_data, int):
+            q = item_data
+            color = "Mặc định"
+        else:
+            q = item_data.get('quantity', 1)
+            color = item_data.get('color', 'Mặc định')
+            
+        total = product.price * q
+        total_price += total
+        cart_items.append({
+            'product': product, 
+            'quantity': q, 
+            'color': color,
+            'total': total
+        })
+        
     return render(request, 'products/cart.html', {'cart_items': cart_items, 'total_price': total_price})
 
 def update_cart(request, product_id, action):
     """Tăng/Giảm hoặc xóa sản phẩm trong giỏ hàng."""
     cart = request.session.get('cart', {})
     p_id = str(product_id)
+    
     if p_id in cart:
-        if action == 'increment': cart[p_id] += 1
+        # Chuyển đổi nếu là giỏ hàng kiểu cũ
+        if isinstance(cart[p_id], int):
+            cart[p_id] = {'quantity': cart[p_id], 'color': 'Mặc định'}
+            
+        if action == 'increment': 
+            cart[p_id]['quantity'] += 1
         elif action == 'decrement':
-            if cart[p_id] > 1: cart[p_id] -= 1
-            else: del cart[p_id]
+            if cart[p_id]['quantity'] > 1: 
+                cart[p_id]['quantity'] -= 1
+            else: 
+                del cart[p_id]
+                
     request.session['cart'] = cart
+    request.session.modified = True
     return redirect('cart_detail')
 
 def remove_from_cart(request, product_id):
@@ -133,12 +177,13 @@ def remove_from_cart(request, product_id):
     if str(product_id) in cart:
         del cart[str(product_id)]
         request.session['cart'] = cart
+        request.session.modified = True
         messages.warning(request, "Đã xóa sản phẩm khỏi giỏ.")
     return redirect('cart_detail')
 
 @login_required(login_url='login')
 def checkout(request):
-    """Trang thanh toán với tính năng tự điền thông tin Profile."""
+    """Trang thanh toán tự in Màu sắc vào hóa đơn."""
     cart = request.session.get('cart', {})
     if not cart:
         return redirect('home')
@@ -148,12 +193,26 @@ def checkout(request):
     if request.method == 'POST':
         total_price = 0
         items_for_json = []
-        for p_id, q in cart.items():
+        for p_id, item_data in cart.items():
             product = get_object_or_404(Product, id=p_id)
+            
+            if isinstance(item_data, int):
+                q = item_data
+                color = "Mặc định"
+            else:
+                q = item_data.get('quantity', 1)
+                color = item_data.get('color', 'Mặc định')
+                
             total_price += product.price * q
+            
+            # Gắn màu sắc thẳng vào tên sản phẩm để lưu Database
+            full_name = f"{product.name} ({color})" if color != "Mặc định" else product.name
+            
             items_for_json.append({
-                'id': product.id, 'name': product.name,
-                'price': float(product.price), 'quantity': q,
+                'id': product.id, 
+                'name': full_name,
+                'price': float(product.price), 
+                'quantity': q,
                 'total': float(product.price * q),
                 'image_url': product.image.url if product.image else ''
             })
@@ -167,7 +226,6 @@ def checkout(request):
             items_json=json.dumps(items_for_json)
         )
         
-        # Xóa sạch giỏ hàng một cách triệt để
         request.session['cart'] = {}
         request.session.modified = True
         
@@ -176,10 +234,20 @@ def checkout(request):
 
     cart_items = []
     total_price = 0
-    for p_id, q in cart.items():
+    for p_id, item_data in cart.items():
         product = get_object_or_404(Product, id=p_id)
+        
+        if isinstance(item_data, int):
+            q = item_data
+            color = "Mặc định"
+        else:
+            q = item_data.get('quantity', 1)
+            color = item_data.get('color', 'Mặc định')
+            
         total_price += product.price * q
-        cart_items.append({'name': product.name, 'quantity': q, 'total': product.price * q, 'image_url': product.image.url})
+        full_name = f"{product.name} ({color})" if color != "Mặc định" else product.name
+        
+        cart_items.append({'name': full_name, 'quantity': q, 'total': product.price * q, 'image_url': product.image.url})
 
     return render(request, 'products/checkout.html', {'cart_items': cart_items, 'total_price': total_price, 'profile': profile})
 
@@ -187,9 +255,7 @@ def checkout(request):
 def success(request, order_id):
     """Trang thông báo đặt hàng thành công kèm chi tiết hóa đơn."""
     order = get_object_or_404(Order, id=order_id, user=request.user)
-    
     order.parsed_items = json.loads(order.items_json) if order.items_json else []
-    
     return render(request, 'products/success.html', {'order': order})
 
 # ==========================================
